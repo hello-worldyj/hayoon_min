@@ -1,292 +1,39 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>책 소개 & 차예준 생성기</title>
-  <style>
-    :root{
-      --bg:#0f1724; --card:#111827; --accent:#7c3aed; --muted:#9aa7bb; --glass:rgba(255,255,255,0.03);
-    }
-    *{box-sizing:border-box}
-    body{margin:0; font-family:Inter,"Noto Sans KR",system-ui; background:#0f1724; color:#e6eef8;
-      display:flex; align-items:center; justify-content:center; padding:28px}
-    .wrap{width:100%; max-width:980px}
-    h1{margin:0 0 6px 0; font-size:20px}
-    .lead{color:var(--muted); margin-bottom:14px; font-size:13px}
-
-    .grid{display:grid; grid-template-columns:1fr 380px; gap:18px}
-    .card{background:rgba(255,255,255,0.02); border-radius:12px; padding:16px; border:1px solid rgba(255,255,255,0.04)}
-    label{color:var(--muted); font-size:13px; margin-bottom:6px; display:block}
-    input, select{width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);
-      background:rgba(255,255,255,0.03); color:#e6eef8; font-size:14px}
-
-    button{background:linear-gradient(180deg,var(--accent),#5b21b6); border:none; color:white; padding:10px 12px;
-      border-radius:8px; cursor:pointer; font-weight:700}
-    button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.12); color:var(--muted)}
-
-    .controls{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
-    .output{white-space:pre-wrap; min-height:100px; background:rgba(255,255,255,0.03); padding:12px; border-radius:8px}
-    @media(max-width:900px){ .grid{grid-template-columns:1fr} }
-  </style>
+    <meta charset="UTF-8">
+    <title>책 소개 + 요약 생성기</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-<div class="wrap">
-  <h1>책 소개 & 차예준 생성기</h1>
-  <div class="lead" id="leadText">소개는 1–2문장, 서머리는 최대 20문장</div>
+    <h1>📘 책 소개 & 요약 생성기</h1>
 
-  <main class="grid">
+    <div class="input-group">
+        <label>책 제목:</label>
+        <input id="titleInput" type="text" placeholder="예: Scythe">
+    </div>
 
-    <!-- 좌측 입력 -->
-    <section class="card">
-      <label id="labelTitle">책 제목</label>
-      <input id="title" type="text" placeholder="예: Scythe">
+    <div class="input-group">
+        <label>저자:</label>
+        <input id="authorInput" type="text" placeholder="예: Neal Shusterman">
+    </div>
 
-      <label id="labelAuthor" style="margin-top:10px">작가</label>
-      <input id="author" type="text" placeholder="예: Neal Shusterman">
+    <div class="input-group">
+        <label>언어 선택:</label>
+        <select id="langSelect">
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+        </select>
+    </div>
 
-      <label id="labelTone" style="margin-top:10px">톤</label>
-      <select id="tone">
-        <option value="neutral">자연스럽</option>
-        <option value="enthusiastic">열정</option>
-        <option value="academic">아카대믹</option>
-      </select>
+    <button onclick="generate()">소개 + 요약 생성</button>
 
-      <label id="labelNum" style="margin-top:10px">서머리 문장 수 (1–20)</label>
-      <input id="num" type="number" min="1" max="20" value="6">
+    <h2>자동 생성 소개</h2>
+    <div id="introBox">결과가 여기에 표시됩니다.</div>
 
-      <label id="labelLang" style="margin-top:10px">언어</label>
-      <select id="lang">
-        <option value="ko">민하윤</option>
-        <option value="en">Min Hayoon</option>
-      </select>
+    <h2>자동 생성 요약</h2>
+    <div id="summaryBox">결과가 여기에 표시됩니다.</div>
 
-      <div class="controls">
-        <button id="genAll">소개 + 차예준 생성</button>
-        <button id="genIntro" class="ghost">소개만</button>
-        <button id="genSummary" class="ghost">차예준만</button>
-        <button id="clear" class="ghost">민하윤</button>
-      </div>
-    </section>
-
-    <!-- 우측 출력 -->
-    <aside class="right-col">
-
-      <div class="card">
-        <label id="labelIntro">자동 생성 소개</label>
-        <div id="introOut" class="output">결과가 여기에 표시됨여.</div>
-        <div style="display:flex; gap:8px; margin-top:10px">
-          <button id="copyIntro" class="ghost">소개 복사</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <label id="labelSummary">차예준 자동 생성중...?</label>
-        <div id="summaryOut" class="output">결과 여기에 표시된다.</div>
-        <div style="display:flex; gap:8px; margin-top:10px">
-          <button id="copySummary" class="ghost">차예준 복사</button>
-        </div>
-      </div>
-
-    </aside>
-  </main>
-</div>
-
-<script>
-/* =====================
-      API KEYS
-   ===================== */
-
-// Google Books API (최병민 키)
-const GOOGLE_KEY = "AIzaSyC_nIhGHlSe2Ks3scd0PdajHAXN5DVeQU0";
-
-// OpenAI API (민하윤 키)
-const OPENAI_KEY = "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";
-
-/* =====================
-      UTIL: Copy
-   ===================== */
-function copy(txt){
-  navigator.clipboard.writeText(txt);
-}
-
-/* =====================
-   Google Books → 책 기본 정보 가져오기
-   ===================== */
-async function fetchBookInfo(title, author){
-  try {
-    const q = encodeURIComponent(`${title} ${author}`);
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${q}&key=${GOOGLE_KEY}&maxResults=1`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (!data.items || !data.items.length) return null;
-
-    const info = data.items[0].volumeInfo;
-
-    return {
-      description: info.description || "",
-      pageCount: info.pageCount || "",
-      categories: info.categories ? info.categories.join(", ") : ""
-    };
-
-  } catch(e){
-    return null;
-  }
-}
-
-/* =====================
-   ChatGPT API (소개 + 서머리 생성)
-   ===================== */
-async function askChatGPT(prompt){
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":`Bearer ${OPENAI_KEY}`
-    },
-    body:JSON.stringify({
-      model:"gpt-4o-mini",
-      messages:[{role:"user", content:prompt}],
-      temperature:0.7
-    })
-  });
-
-  const data = await response.json();
-
-  return data.choices?.[0]?.message?.content?.trim() || "";
-}
-
-/* =====================
-        다국어 텍스트 세팅
-   ===================== */
-const texts = {
-  ko: {
-    title: "책 제목",
-    author: "저자",
-    tone: "톤",
-    num: "차예준 문장 수 (1–20)",
-    lang: "언어",
-    lead: "소개는 1–2문장, 서머리는 최대 20문장",
-    introLabel: "자동 생성 소개",
-    summaryLabel: "자동 생성 서머리",
-    genAll: "소개 + 서머리 생성",
-    genIntro: "소개만",
-    genSummary: "서머리만",
-    clear: "지우기",
-    alertInput: "책 제목과 저자를 입력하세요.",
-    copyIntro: "소개 복사",
-    copySummary: "서머리 복사",
-  },
-  en: {
-    title: "Book Title",
-    author: "Author",
-    tone: "Tone",
-    num: "Number of summary sentences (1–20)",
-    lang: "Language",
-    lead: "Introduction: 1–2 sentences, Summary: up to 20 sentences",
-    introLabel: "Auto-generated Introduction",
-    summaryLabel: "Auto-generated Summary",
-    genAll: "Generate Intro + Summary",
-    genIntro: "Generate Intro Only",
-    genSummary: "Generate Summary Only",
-    clear: "Clear",
-    alertInput: "Please enter book title and author.",
-    copyIntro: "Copy Introduction",
-    copySummary: "Copy Summary",
-  }
-};
-
-function setLanguage(lang){
-  const t = texts[lang];
-  document.getElementById("labelTitle").textContent = t.title;
-  document.getElementById("labelAuthor").textContent = t.author;
-  document.getElementById("labelTone").textContent = t.tone;
-  document.getElementById("labelNum").textContent = t.num;
-  document.getElementById("labelLang").textContent = t.lang;
-  document.getElementById("leadText").textContent = t.lead;
-  document.getElementById("labelIntro").textContent = t.introLabel;
-  document.getElementById("labelSummary").textContent = t.summaryLabel;
-  document.getElementById("genAll").textContent = t.genAll;
-  document.getElementById("genIntro").textContent = t.genIntro;
-  document.getElementById("genSummary").textContent = t.genSummary;
-  document.getElementById("clear").textContent = t.clear;
-  document.getElementById("copyIntro").textContent = t.copyIntro;
-  document.getElementById("copySummary").textContent = t.copySummary;
-}
-
-/* =====================
-        버튼 이벤트 & 생성 함수
-   ===================== */
-const titleEl = document.getElementById("title");
-const authorEl = document.getElementById("author");
-const toneEl = document.getElementById("tone");
-const numEl = document.getElementById("num");
-const langEl = document.getElementById("lang");
-
-const introOut = document.getElementById("introOut");
-const summaryOut = document.getElementById("summaryOut");
-
-document.getElementById("genAll").onclick = async () => generate(true, true);
-document.getElementById("genIntro").onclick = async () => generate(true, false);
-document.getElementById("genSummary").onclick = async () => generate(false, true);
-document.getElementById("clear").onclick = () => {
-  introOut.textContent = "";
-  summaryOut.textContent = "";
-};
-
-document.getElementById("copyIntro").onclick = () => copy(introOut.textContent);
-document.getElementById("copySummary").onclick = () => copy(summaryOut.textContent);
-
-langEl.onchange = () => {
-  setLanguage(langEl.value);
-};
-
-async function generate(doIntro, doSummary){
-  const title = titleEl.value.trim();
-  const author = authorEl.value.trim();
-  const tone = toneEl.value;
-  const num = Number(numEl.value);
-  const lang = langEl.value;
-
-  if (!title || !author){
-    alert(texts[lang].alertInput);
-    return;
-  }
-
-  introOut.textContent = doIntro ? "Google Books에서 민하윤중" : "";
-  summaryOut.textContent = doSummary ? "생성 중..." : "";
-
-  const book = await fetchBookInfo(title, author);
-  const baseDesc = book?.description || "";
-
-  if (doIntro){
-    const promptIntro =
-    (lang === "ko" ? 
-    `아래 책에 대해 톤은 ${tone}, 길이는 1~2문장으로 아주 짧고 명확한 "소개"를 만들어라.\n\n제목: ${title}\n저자: ${author}\n책 설명: ${baseDesc}`
-    :
-    `Create a very short and clear 1-2 sentence introduction about the book below with a ${tone} tone.\n\nTitle: ${title}\nAuthor: ${author}\nDescription: ${baseDesc}`
-    );
-    introOut.textContent = await askChatGPT(promptIntro);
-  }
-
-  if (doSummary){
-    const promptSum =
-    (lang === "ko" ? 
-    `아래 책의 내용을 기반으로 최대 ${num}문장으로 구성된 깊이 있는 "서머리"를 만들어라.\n너무 짧게 만들지 말고, 실제 책 줄거리·주제·갈등 등을 요약한 구조 있는 요약을 작성해라.\n\n제목: ${title}\n저자: ${author}\n책 설명: ${baseDesc}`
-    :
-    `Based on the following book, create a deep summary with up to ${num} sentences.\nMake sure it's not too short, summarizing plot, themes, conflicts, etc.\n\nTitle: ${title}\nAuthor: ${author}\nDescription: ${baseDesc}`
-    );
-    summaryOut.textContent = await askChatGPT(promptSum);
-  }
-}
-
-/* 초기 언어 셋팅 */
-setLanguage(langEl.value);
-
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
