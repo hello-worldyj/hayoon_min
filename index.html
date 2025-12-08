@@ -3,49 +3,49 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>책 소개 & 서머리 생성기</title>
+    <title>책 소개 & 요약 만들기</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div class="container">
 
-    <h1>책 소개 & 서머리 생성</h1>
+    <h1>책 소개와 요약 만들기</h1>
 
-    <label>책 제목</label>
+    <label for="title">책 제목</label>
     <input type="text" id="title" placeholder="예: 해리포터" />
 
-    <label>저자</label>
+    <label for="author">작가 이름</label>
     <input type="text" id="author" placeholder="예: J.K. Rowling" />
 
-    <label>언어 선택</label>
+    <label for="lang">언어 선택</label>
     <select id="lang">
         <option value="한국어">한국어</option>
-        <option value="English">English</option>
-        <option value="日本語">日本語</option>
-        <option value="中文">中文</option>
+        <option value="English">영어</option>
+        <option value="日本語">일본어</option>
+        <option value="中文">중국어</option>
     </select>
 
-    <label>톤 선택</label>
+    <label for="tone">글 분위기 선택</label>
     <select id="tone">
-        <option value="neutral">중립적</option>
-        <option value="fun">재밌게</option>
+        <option value="neutral">보통</option>
+        <option value="fun">재미있게</option>
         <option value="serious">진지하게</option>
-        <option value="simple">쉽게</option>
+        <option value="simple">쉽고 간단하게</option>
     </select>
 
-    <label>서머리 문장 수 (최대 20)</label>
+    <label for="num">요약 문장 수 (최대 20)</label>
     <input type="number" id="num" value="10" min="1" max="20" />
 
-    <button onclick="generate()">생성하기</button>
+    <button onclick="generate()">만들기</button>
 
-    <h2>자동 생성 소개</h2>
-    <p id="intro">Google Books에서 정보 불러오기 전…</p>
+    <h2>자동으로 만든 책 소개</h2>
+    <p id="intro">아직 책 정보를 가져오지 않았어요.</p>
     <button onclick="copyText('intro')">소개 복사</button>
 
-    <h2>자동 생성 서머리</h2>
-    <p id="summary">서머리 생성 전…</p>
-    <button onclick="copyText('summary')">서머리 복사</button>
+    <h2>자동으로 만든 요약</h2>
+    <p id="summary">아직 요약이 없어요.</p>
+    <button onclick="copyText('summary')">요약 복사</button>
 
 </div>
 
