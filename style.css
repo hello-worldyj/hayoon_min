@@ -1,0 +1,15 @@
+body {
+    font-family: sans-serif;
+    max-width: 650px;
+    margin: auto;
+    padding: 30px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+}
