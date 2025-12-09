@@ -1,6 +1,6 @@
-// 배포된 네 Vercel 주소로 꼭 바꿔야 함!
-const API_BOOK = 'https://hayoonmin.vercel.app/api/book';
-const API_SUMMARY = 'https://hayoonmin.vercel.app/api/summary';
+// API endpoints - using local server
+const API_BOOK = '/api/book';
+const API_SUMMARY = '/api/summary';
 
 async function generate() {
     const title = document.getElementById('title').value.trim();
